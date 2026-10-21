@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Client</title></head>
+<body>
+<!-- A client edit page that polls: the sync line inside the form is rewritten every 300 ms. -->
+<form onsubmit="return false">
+  <h3>Edit client</h3>
+  <p id="sync">Synced 0 times</p>
+  <label>Name <input name="name" value="Acme"></label>
+  <button type="button" id="save">Save client</button>
+</form>
+<p id="status"></p>
+<script>
+let n = 0;
+setInterval(() => { document.getElementById('sync').textContent = 'Synced ' + (++n) + ' times'; }, 300);
+document.getElementById('save').addEventListener('click', () => {
+  document.getElementById('status').textContent =
+    'Saved client ' + document.querySelector('input[name=name]').value;
+});
+</script>
+</body>
+</html>

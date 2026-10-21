@@ -1,0 +1,10 @@
+# A login and logout on a public practice site with published demo credentials.
+url: https://the-internet.herokuapp.com/login
+steps:
+  - fill: { field: "Username", value: "tomsmith" }
+  - fill: { field: "Password", value: "SuperSecretPassword!" }
+  - click: "Login"
+  - expect: "You logged into a secure area!"
+  - checkpoint: secure-area
+  - click: "Logout"
+  - expect: "You logged out of the secure area!"

@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Late control</title></head>
+<body>
+<h3>Save</h3><p>Draft</p><button type="button">Cancel</button>
+<script>
+setTimeout(() => {
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.textContent = 'Save';
+  document.body.append(save);
+}, 1500);
+</script>
+</body>
+</html>

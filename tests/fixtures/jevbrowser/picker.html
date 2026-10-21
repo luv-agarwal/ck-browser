@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Token</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 12px; }
+  #filler { font-size: 6px; margin: 0; }
+  .menu > div { padding: 2px; cursor: pointer; }
+</style>
+</head>
+<body>
+<!-- 5987 characters, so the page text's 6000-character cut lands inside the token below -->
+<p id="filler"></p>
+<code id="token">ead1ef0ad9fc71a9c4eb9a3315887bf4b8bc23ffa16002999c4af8fc7ed55f92</code>
+<p>Applies to every bucket in this account, now and later</p>
+<!-- react-select: plain-div options, the clicks handled at the root -->
+<label id="bucket-label" for="bucket">Bucket</label>
+<input id="bucket" role="combobox" aria-expanded="true" aria-labelledby="bucket-label"
+       aria-activedescendant="opt-backups">
+<div class="menu"><div id="opt-backups">backups</div><div>archive</div></div>
+<div class="menu"><div id="react-select-9-option-0">logs</div></div>
+<div class="menu" role="listbox"><div role="option">media</div></div>
+<p id="picked"></p>
+<script>
+  document.getElementById("filler").textContent = "lorem ".repeat(998).trim();
+  document.addEventListener("click", event => {
+    const option = event.target.closest(".menu > div");
+    if (option) document.getElementById("picked").textContent = "Bucket: " + option.textContent;
+  });
+</script>
+</body>
+</html>

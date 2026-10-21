@@ -1,0 +1,75 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Signals</title>
+<style>
+  body { font: 14px sans-serif; margin: 12px; }
+  .row { margin: 6px 0; }
+  .list div, .pick { padding: 3px 6px; border: 1px solid #ccc; display: inline-block; margin-right: 4px; }
+  .list[hidden] { display: none; }
+  #deleg { border: 1px dashed #999; padding: 4px; }
+</style></head>
+<body>
+<p id="out">Result: none</p>
+<div class="row"><input aria-label="Note"></div>
+<!-- A role-less trigger and options that listen for clicks (no role, no tabindex). -->
+<div class="row">
+  <h3 style="cursor:pointer;display:inline">Fruit</h3>
+  <div class="pick" id="fruit">Pick a fruit</div>
+  <div class="list" id="fruits" hidden><div>Apple</div><div>Pear</div></div>
+</div>
+<!-- React's onClick pattern: an onclick property on a plain row. -->
+<div class="row" id="alpha" onclick="out('Row: Alpha')">Alpha row</div>
+<!-- Delegation: one listener on a box around many buttons; neither it nor body is a control. -->
+<div class="row" id="deleg"><button>D1</button><button>D2</button><button>D3</button><button>D4</button></div>
+<!-- A focusable custom widget with no role. -->
+<div class="row"><div tabindex="0" id="star">Star rating</div></div>
+<!-- Same words twice: a listening wrapper around a listening inner, and around a real button. -->
+<div class="row" id="wrap" onclick="out('Wrapper')"><div id="inner" onclick="event.stopPropagation(); out('Settings opened')">Open settings</div></div>
+<div class="row" onclick="out('Draft wrapper')"><button onclick="event.stopPropagation(); out('Draft saved')">Save draft</button></div>
+<!-- Closed shadow roots: a role-less dropdown, a native select with a button, plain text. -->
+<div class="row"><closed-dropdown></closed-dropdown></div>
+<div class="row"><closed-form></closed-form></div>
+<!-- A canvas control whose role and name come only from ElementInternals. -->
+<div class="row"><zoom-canvas></zoom-canvas></div>
+<script>
+  const out = text => document.getElementById('out').textContent = 'Result: ' + text;
+  document.body.addEventListener('click', () => {});
+  document.getElementById('fruit').addEventListener('click', () => document.getElementById('fruits').hidden = false);
+  for (const option of document.querySelectorAll('#fruits div'))
+    option.addEventListener('click', () => { out('Fruit: ' + option.textContent); document.getElementById('fruits').hidden = true; });
+  document.getElementById('deleg').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') out('Delegated: ' + e.target.textContent); });
+  document.getElementById('star').addEventListener('focus', () => out('Star focused'));
+  customElements.define('closed-dropdown', class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({mode: 'closed'});
+      root.innerHTML = '<style>div{padding:3px 6px;border:1px solid #ccc;display:inline-block}</style>' +
+        '<div id="trigger">Choose a size</div><span id="list" hidden><div>Small</div><div>Large</div></span>';
+      root.getElementById('trigger').addEventListener('click', () => root.getElementById('list').hidden = false);
+      for (const option of root.querySelectorAll('#list div'))
+        option.addEventListener('click', () => { out('Size: ' + option.textContent); root.getElementById('list').hidden = true; });
+    }
+  });
+  customElements.define('closed-form', class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({mode: 'closed'});
+      root.innerHTML = '<label>Color <select><option>Red</option><option>Blue</option></select></label> ' +
+        '<button>Apply color</button> <span>Closed greeting text</span>';
+      root.querySelector('select').addEventListener('change', e => out('Color: ' + e.target.value));
+      root.querySelector('button').addEventListener('click', () => out('Applied'));
+    }
+  });
+  customElements.define('zoom-canvas', class extends HTMLElement {
+    constructor() {
+      super();
+      const internals = this.attachInternals();
+      internals.role = 'button';
+      internals.ariaLabel = 'Zoom canvas';
+      this.addEventListener('click', () => out('Zoomed'));
+    }
+    connectedCallback() {
+      this.style.display = 'inline-block';
+      this.innerHTML = '<canvas width="60" height="24"></canvas>';
+      this.firstChild.getContext('2d').fillRect(0, 0, 60, 24);
+    }
+  });
+</script>
+</body></html>

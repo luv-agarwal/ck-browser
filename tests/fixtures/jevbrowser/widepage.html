@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Wide page</title>
+<style>
+  body { margin: 0; font: 14px sans-serif; }
+  td { padding: 4px 8px; white-space: nowrap; }
+  td.wide { min-width: 900px; }
+  #drawer { position: absolute; left: 2600px; top: 0; width: 280px; }
+</style>
+</head>
+<body>
+<!-- No panel scrolls: the page itself is wider than the window. -->
+<div id="root">
+  <table>
+    <tr><td>Acme</td><td class="wide">acme.example</td><td class="wide">Mumbai</td>
+      <td><button type="button" aria-label="Edit Acme">Edit</button></td></tr>
+  </table>
+  <!-- A closed off-canvas drawer: off to the side too, but not in any row on screen. -->
+  <div id="drawer"><button type="button" aria-label="Save drawer">Save</button></div>
+  <p id="status">Nothing edited</p>
+</div>
+<script>
+for (const b of document.querySelectorAll('button'))
+  b.addEventListener('click', () => { document.getElementById('status').textContent = 'Clicked: ' + b.getAttribute('aria-label'); });
+</script>
+</body>
+</html>

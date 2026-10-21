@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Products</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 12px; }
+  label { display: block; margin: 6px 0 2px; }
+  .card { display: inline-block; border: 1px solid #ccc; padding: 6px; margin: 4px; }
+  .hidden { display: none; }
+  .spacer { height: 900px; }
+  #items button { display: block; margin: 2px 0; }
+  #stack { position: relative; height: 26px; }
+  #overlay { position: absolute; inset: 0; background: #fff; border: 1px solid #333; }
+  #waypoint { height: 30px; background: #eee; }
+  .slot { border: 1px dashed #999; padding: 4px; width: 120px; }
+  .tile { border: 1px solid #666; padding: 2px; width: 80px; }
+  #viewer { width: 200px; height: 60px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<h1>Products</h1>
+<button id="upload">Upload product</button>
+<form id="form" class="hidden">
+  <label for="pname">Product name</label>
+  <input id="pname" name="pname">
+  <label for="cat">Category</label>
+  <select id="cat" name="cat">
+    <option value="">Choose one</option>
+    <option value="kurta">Kurta</option>
+    <option value="saree">Saree</option>
+    <option value="shirt">Shirt</option>
+  </select>
+  <label>Password<input id="pw" type="password"></label>
+  <p><button id="save" type="button">Save</button></p>
+</form>
+<p id="status"></p>
+<!-- readable only through its aria-label -->
+<div id="viewer" class="hidden" role="dialog" aria-label="Image viewer"></div>
+<input id="search" placeholder="Search">
+<p id="searchout"></p>
+<!-- the file input is hidden behind its button; the run sets the file over CDP, never clicks it -->
+<p><input id="file" type="file" accept="image/*" class="hidden">
+   <button id="browse" type="button">Browse images</button> <span id="chosen"></span></p>
+<p><button id="regen" type="button" title="Regenerate this shot">Regenerate</button>
+   <span id="hovered"></span></p>
+<!-- an icon-only control: no name of its own, so the snapshot names it after what is beside it -->
+<p><span>Credit Type</span> <button id="info" type="button"><svg width="12" height="12"></svg></button>
+   <span id="explained"></span></p>
+<!-- the panel overlays the bar without aria-hidden: the button underneath must not be offered -->
+<div id="stack"><button id="behind" type="button">Open client list</button>
+  <div id="overlay"><button id="front" type="button">Open client list</button>
+    <span id="panelout"></span></div></div>
+<!-- HTML5 drag only: the bin reacts on drop, to pointer input or to the synthetic fallback -->
+<div id="items"><button draggable="true">View A shot</button>
+  <button draggable="true">View B shot</button></div>
+<!-- the drag passes over this on its way to the bin: passing changes the page, no drop lands -->
+<div id="waypoint"></div><span id="passed"></span>
+<p><button id="bin" type="button">Archive bin</button> <span id="archived"></span></p>
+<!-- neither end is interactable: a draggable div onto a plain div that handles the drop -->
+<div class="tile" draggable="true">Tile X</div>
+<div class="slot">Front<div>drop here</div></div>
+<span id="placed"></span>
+<!-- the cards sit below an 800 px viewport: only a full-page observation can count them -->
+<div class="spacer"></div>
+<div id="cards"></div>
+<script>
+  const $ = id => document.getElementById(id);
+  $("upload").addEventListener("click", () => $("form").classList.remove("hidden"));
+  $("save").addEventListener("click", () => {
+    $("status").textContent = "Saved";
+    $("viewer").classList.remove("hidden");
+    $("cards").innerHTML = [1, 2, 3]
+      .map(n => '<article class="card"><a href="#">Test kurta card ' + n + "</a></article>")
+      .join("");
+  });
+  $("browse").addEventListener("click", () => $("file").click());
+  $("file").addEventListener("change", () => {
+    $("chosen").textContent = "Picked: " + $("file").files[0].name;
+  });
+  $("regen").addEventListener("mouseover", () => $("hovered").textContent = "Regenerating soon");
+  $("info").addEventListener("click", () => $("explained").textContent = "Credit Type explained");
+  $("front").addEventListener("click", () => $("panelout").textContent = "Panel list opened");
+  $("behind").addEventListener("click", () => $("panelout").textContent = "Bar list opened");
+  for (const event of ["mouseover", "dragover"]) {
+    $("waypoint").addEventListener(event, () => $("passed").textContent = "Passed the waypoint");
+  }
+  let dragged = null;
+  for (const item of $("items").children) item.addEventListener("dragstart", () => dragged = item);
+  $("bin").addEventListener("dragover", event => event.preventDefault());
+  $("bin").addEventListener("drop", event => {
+    event.preventDefault();
+    if (dragged) $("archived").textContent = "Archived: " + dragged.textContent;
+  });
+  const tile = document.querySelector(".tile"), slot = document.querySelector(".slot");
+  tile.addEventListener("dragstart", () => dragged = tile);
+  slot.addEventListener("dragover", event => event.preventDefault());
+  slot.addEventListener("drop", event => {
+    event.preventDefault();
+    if (dragged) $("placed").textContent = "Placed: " + dragged.textContent.trim() + " in Front";
+  });
+  $("search").addEventListener("keydown", event => {
+    if (event.key === "Enter") $("searchout").textContent = "Searched: " + $("search").value;
+  });
+</script>
+</body>
+</html>

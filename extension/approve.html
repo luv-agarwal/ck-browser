@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ck-browser — allow a domain?</title>
+<style>
+  body { max-width: 520px; margin: 48px auto; padding: 0 16px; background: #202124; color: #e8eaed;
+         font: 14px system-ui, sans-serif; }
+  h1 { font-size: 18px; font-weight: 600; }
+  ul { list-style: none; margin: 16px 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #3c4043; }
+  li span { flex: 1; font-family: ui-monospace, monospace; }
+  button { background: #3c4043; color: #e8eaed; border: 0; border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+  button:hover { background: #5f6368; }
+  button.allow { background: #8ab4f8; color: #202124; }
+  p { color: #9aa0a6; }
+</style>
+</head>
+<body>
+  <h1>An agent asks to open tabs on</h1>
+  <ul id="pending"></ul>
+  <p>An allowed domain means the agent may act as you on that site whenever Chrome is open.
+     You can remove it later from the ck-browser popup.</p>
+  <script src="approve.js"></script>
+</body>
+</html>

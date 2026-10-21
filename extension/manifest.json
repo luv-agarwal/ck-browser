@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ck-browser",
+  "version": "0.5.0",
+  "description": "Hand one tab of this Chrome to a `ck-browser run --target ext`, or let it open its own on domains you allow.",
+  "permissions": [
+    "debugger",
+    "nativeMessaging",
+    "alarms",
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "ck-browser — hand over this tab, or let agents open their own",
+    "default_popup": "popup.html"
+  }
+}

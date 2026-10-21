@@ -1,0 +1,86 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Delegated</title>
+<style>
+  body { font: 14px sans-serif; margin: 12px; }
+  .row { margin: 6px 0; }
+  .list div, .pick { padding: 3px 6px; border: 1px solid #ccc; display: inline-block; margin-right: 4px; }
+  #root { min-height: 70vh; }
+  #panel { position: fixed; background: #fff; border: 1px solid #ccc; padding: 4px; }
+</style></head>
+<body>
+<p id="out">Result: none</p>
+<!-- Svelte 5: one document listener per event; the handler sits on the node as `__click`. -->
+<div class="row"><div class="pick" id="svelte">Svelte save</div></div>
+<!-- Solid: the same with `$$pointerdown`. -->
+<div class="row"><div class="pick" id="solid">Solid open</div></div>
+<!-- React 17+: listeners on the root container only; each node's props live on `__reactProps$<key>`. -->
+<div id="root">
+  <div class="row">
+    <div class="pick" id="segment">Pick a segment</div>
+    <div class="list" id="segments" hidden><div>Apparel</div><div>Footwear</div><div>Jewelry</div></div>
+  </div>
+  <div class="row"><div class="pick" id="hover">Hover only</div></div>
+  <!-- A wizard's picker: a button trigger, options in a portal at the end of body. -->
+  <div class="row"><button type="button" id="gender" aria-label="Select segment">Gender ▾</button></div>
+</div>
+<div id="portal"></div>
+<script>
+  const out = text => document.getElementById('out').textContent = 'Result: ' + text;
+  const $ = id => document.getElementById(id);
+  const KEY = '__reactProps$abc123';
+  const props = (node, value) => node[KEY] = {children: node.textContent, ...value};
+  // React's root dispatch: walk from the target up to the container, calling each node's prop.
+  const names = {pointerdown: 'onPointerDown', mousedown: 'onMouseDown', click: 'onClick'};
+  const root = container => {
+    for (const type in names) container.addEventListener(type, e => {
+      for (let node = e.target; node && node !== container && !e.cancelBubble; node = node.parentElement)
+        node[KEY]?.[names[type]]?.(e);
+    });
+  };
+  root($('root'));
+  root($('portal'));
+  for (const row of document.querySelectorAll('#root .row')) props(row, {className: 'row'});
+  // Section 1: a role-less trigger (onMouseDown) and role-less options (onPointerDown only).
+  props($('segment'), {className: 'pick', onMouseDown: () => $('segments').hidden = !$('segments').hidden});
+  for (const option of $('segments').children)
+    props(option, {onPointerDown: e => { e.preventDefault(); out('Segment: ' + option.textContent); $('segments').hidden = true; }});
+  props($('hover'), {className: 'pick', onMouseEnter: () => out('Hovered')});
+  // Section 2: the trigger opens a fixed panel in the portal; options are buttons with onPointerDown only.
+  const close = () => $('portal').replaceChildren();
+  props($('gender'), {type: 'button', onMouseDown: e => {
+    e.preventDefault(); e.stopPropagation();
+    if ($('panel')) return close();
+    const panel = document.createElement('div'), r = $('gender').getBoundingClientRect();
+    panel.id = 'panel';
+    panel.style.left = r.left + 'px';
+    panel.style.top = r.bottom + 4 + 'px';
+    for (const text of ['Men', 'Women']) {
+      const option = document.createElement('button');
+      option.type = 'button';
+      option.textContent = text;
+      props(option, {type: 'button', onPointerDown: e => { e.preventDefault(); out('Gender: ' + text); close(); }});
+      panel.append(option);
+    }
+    $('portal').append(panel);
+  }});
+  // The wizard closes an open list on a press anywhere outside its trigger and list.
+  document.addEventListener('pointerdown', e => {
+    if (!$('segment').contains(e.target) && !$('segments').contains(e.target)) $('segments').hidden = true;
+    if ($('panel') && !$('gender').contains(e.target) && !$('panel').contains(e.target)) close();
+  });
+  // Section 3: Svelte 5 stores a handler or [handler, ...args] and dispatches from the document.
+  $('svelte').__click = [(e, word) => out('Svelte ' + word), 'saved'];
+  document.addEventListener('click', e => {
+    for (let node = e.target; node && !e.cancelBubble; node = node.parentElement) {
+      const handler = node.__click;
+      if (Array.isArray(handler)) handler[0].call(node, e, ...handler.slice(1));
+      else handler?.call(node, e);
+    }
+  });
+  // Section 4: Solid's delegated events.
+  $('solid').$$pointerdown = () => out('Solid opened');
+  document.addEventListener('pointerdown', e => {
+    for (let node = e.target; node && !e.cancelBubble; node = node.parentElement) node.$$pointerdown?.call(node, e);
+  });
+</script>
+</body></html>

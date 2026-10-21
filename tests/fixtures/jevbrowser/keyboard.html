@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Keyboard</title>
+<style>
+  body { font: 16px sans-serif; margin: 24px; }
+  label, input, .widget, p { display: block; margin: 8px 0; }
+  .widget { border: 1px solid #888; padding: 8px; width: 240px; }
+</style>
+</head>
+<body>
+<h1>Sign in</h1>
+<label for="email">Email</label>
+<input id="email" type="text">
+<label for="password">Password</label>
+<input id="password" type="password">
+<div class="widget" id="widget" tabindex="0" aria-label="Key echo">Echo widget</div>
+<p id="echo">Keys:</p>
+<shadow-field></shadow-field>
+<script>
+  // A custom widget that is not a text field: it echoes typed characters into a visible line.
+  document.getElementById("widget").addEventListener("beforeinput", event => {
+    document.getElementById("echo").textContent += event.data || "";
+  });
+  document.getElementById("widget").addEventListener("keydown", event => {
+    if (event.key.length === 1) document.getElementById("echo").textContent += event.key;
+  });
+  customElements.define("shadow-field", class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({mode: "open"});
+      root.innerHTML = '<input id="inner" placeholder="Shadow city">';
+    }
+  });
+</script>
+</body>
+</html>

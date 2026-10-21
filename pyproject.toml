@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ck-browser"
+dynamic = ["version"]
+description = "Browser checks written as plain-language YAML steps, run in a real Chrome over CDP; Jev picks the element for each step."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["browser", "automation", "testing", "cdp", "chrome", "agents", "yaml"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Homepage = "https://github.com/luv-agarwal/ck-browser"
+Issues = "https://github.com/luv-agarwal/ck-browser/issues"
+
+[project.scripts]
+ck-browser = "ck_browser.__main__:main"
+
+[tool.hatch.version]
+path = "ck_browser/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ck_browser"]

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Board</title>
+<style>
+  body { margin: 0; font: 14px sans-serif; }
+  .board { display: flex; overflow-x: auto; gap: 8px; }
+  .col { flex: none; width: 300px; min-height: 300px; border: 1px solid #ccc; padding: 8px; }
+  .card { border: 1px solid #888; padding: 8px; margin: 4px 0; background: #eef; }
+</style>
+</head>
+<body>
+<!-- Six columns in a board that scrolls sideways: Todo and Staging never fit on screen together. -->
+<div class="board">
+  <div class="col" data-col="Todo"><h4>Todo</h4><div class="card" draggable="true">Card One</div></div>
+  <div class="col" data-col="Doing"><h4>Doing</h4><div class="card" draggable="true">Card Three</div></div>
+  <div class="col" data-col="Review"><h4>Review</h4><div class="card" draggable="true">Card Four</div></div>
+  <div class="col" data-col="QA"><h4>QA</h4><div class="card" draggable="true">Card Five</div></div>
+  <div class="col" data-col="Staging"><h4>Staging</h4><div class="card" draggable="true">Card Six</div></div>
+  <div class="col" data-col="Done"><h4>Done</h4><div class="card" draggable="true">Card Seven</div></div>
+</div>
+<p id="status">Nothing moved</p>
+<script>
+let dragged = null;
+for (const card of document.querySelectorAll('.card')) card.addEventListener('dragstart', e => {
+  dragged = card; e.dataTransfer.setData('text/plain', card.textContent); });
+for (const col of document.querySelectorAll('.col')) {
+  col.addEventListener('dragover', e => e.preventDefault());
+  col.addEventListener('drop', e => { e.preventDefault();
+    document.getElementById('status').textContent = 'Moved: ' + (dragged && dragged.textContent) + ' to ' + col.dataset.col; });
+}
+document.addEventListener('mousedown', e => { const card = e.target.closest('.card');
+  if (card) document.getElementById('status').textContent = 'Pressed: ' + card.textContent; });
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DNS records</title>
+<style>
+  body { font: 14px sans-serif; margin: 20px; }
+  .field { margin: 8px 0; }
+  .box { position: relative; display: inline-block; width: 160px; height: 28px; border: 1px solid #888; }
+  .box span, .box .shown { display: block; line-height: 28px; padding: 0 6px; }
+  .box select.over { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+  .clipped { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .trigger { display: inline-block; border: 1px solid #888; padding: 4px 8px; min-width: 140px; }
+  .list div { padding: 4px 8px; cursor: pointer; }
+  .cover { position: absolute; inset: 0; background: #fff; line-height: 28px; padding: 0 6px; }
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; }
+</style>
+</head>
+<body>
+<h2>New Records</h2>
+<div class="field">
+  <div>Type</div>
+  <div class="trigger" id="type" style="cursor:pointer">Choose an option</div>
+</div>
+<div class="field"><label for="name">Name</label> <input id="name"></div>
+<div class="field"><label for="value">Value</label> <input id="value"></div>
+<div class="field">
+  <div>TTL</div>
+  <div class="box"><span id="ttl-shown">1/2 Hour</span><select class="over" id="ttl" aria-label="TTL">
+    <option>1/2 Hour</option><option>1 Hour</option><option>12 Hours</option><option>1 Day</option><option>1 Week</option>
+  </select></div>
+</div>
+<div class="field">
+  <label for="priority">Priority</label>
+  <div class="box"><select class="clipped" id="priority"><option>Low</option><option>Medium</option><option>High</option></select><div class="shown" id="priority-shown">Low</div></div>
+</div>
+<div class="field">
+  <div>Protocol</div>
+  <dns-protocol></dns-protocol>
+  <dns-note></dns-note>
+</div>
+<div class="field">
+  <dns-region></dns-region>
+</div>
+<div class="field">
+  <label for="speed">Speed</label>
+  <div class="box"><select id="speed" style="width:100%;height:100%"><option>Slow</option><option>Fast</option></select><div class="cover" id="speed-shown">Slow</div></div>
+</div>
+<div class="field">
+  <div class="box"><select class="over" id="size"><option>Small</option><option>Large</option></select><span>Small</span></div>
+</div>
+<div class="field">
+  <button type="button">Add More Records</button>
+  <button type="button" id="save" disabled>Save</button>
+  <button type="button">Cancel</button>
+</div>
+<div id="plain-row">Plain row</div>
+<div id="status"></div>
+<table>
+  <tr><th>Type</th><th>Name</th><th>Data</th></tr>
+  <tr><td>A</td><td>@</td><td>192.0.2.1</td></tr>
+  <tr><td>A</td><td>www</td><td>192.0.2.2</td></tr>
+  <tr><td>NS</td><td>@</td><td>ns1.example.com</td></tr>
+</table>
+<div class="acc"><button type="button">Shipping</button><div style="height:0;overflow:hidden"><select aria-label="Shipping speed"><option>Std</option><option>Express</option></select></div></div>
+<div class="acc" style="padding-bottom:24px"><button type="button">Returns</button><div style="height:0;overflow:hidden"><select aria-label="Return speed"><option>Std</option><option>Express</option></select></div></div>
+<section><button type="button">Show filters</button><div style="opacity:0;pointer-events:none"><select aria-label="Filter age"><option>Old</option><option>New</option></select></div></section>
+<div id="overlay"></div>
+<script>
+const status = line => { const p = document.createElement('div'); p.textContent = line; document.getElementById('status').append(p); };
+const type = document.getElementById('type');
+type.addEventListener('click', () => {
+  if (document.querySelector('.list')) return;
+  const list = document.createElement('div');
+  list.className = 'list';
+  for (const value of ['A', 'AAAA', 'CNAME', 'MX', 'TXT']) {
+    const item = document.createElement('div');
+    item.textContent = value;
+    item.addEventListener('click', () => {
+      list.remove();
+      type.textContent = value;
+      status('Type: ' + value);
+      document.getElementById('save').disabled = false;
+    });
+    list.append(item);
+  }
+  type.after(list);
+});
+const mirror = (id, label) => document.getElementById(id).addEventListener('change', event => {
+  document.getElementById(id + '-shown').textContent = event.target.value;
+  status(label + ': ' + event.target.value);
+});
+mirror('ttl', 'TTL');
+mirror('priority', 'Priority');
+mirror('speed', 'Speed');
+document.getElementById('plain-row').addEventListener('click', () => status('Row clicked'));
+customElements.define('dns-protocol', class extends HTMLElement {
+  connectedCallback() {
+    const root = this.attachShadow({mode: 'open'});
+    root.innerHTML = '<button type="button">Choose a protocol</button><div class="opts"></div><p class="said"></p>';
+    root.querySelector('button').addEventListener('click', () => {
+      root.querySelector('.opts').innerHTML = '<div role="option">TCP</div><div role="option">UDP</div>';
+      for (const option of root.querySelectorAll('[role="option"]')) option.addEventListener('click', () => {
+        root.querySelector('.opts').innerHTML = '';
+        root.querySelector('.said').textContent = 'Shadow says ' + option.textContent;
+        status('Protocol: ' + option.textContent);
+      });
+    });
+  }
+});
+customElements.define('dns-note', class extends HTMLElement {
+  connectedCallback() { this.attachShadow({mode: 'open'}).append('Bare shadow text'); }
+});
+customElements.define('dns-region', class extends HTMLElement {
+  connectedCallback() {
+    const root = this.attachShadow({mode: 'open'});
+    root.innerHTML = '<label for="region">Region</label> <select id="region"><option>US</option><option>EU</option><option>Asia</option></select>';
+    root.querySelector('select').addEventListener('change', event => status('Region: ' + event.target.value));
+  }
+});
+</script>
+</body>
+</html>
